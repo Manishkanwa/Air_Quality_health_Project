@@ -108,6 +108,9 @@ class Get_locations:
 class GetMeasurements:
     def __init__(self):
         self.header = {"X-API-Key" : os.getenv("API_KEY")}
+        self.dataset = []
+        self.dataset_df = pd.DataFrame(self.dataset, columns=['Sensor_id', 'Value', 'DateTimeFrom', 'DateTimeTo'])
+        self.dataset_df.to_csv(os.path.join('data','measeurments.csv'),index=False)
         
         
     def get_sensors_inrange(self, location_sensor_data : pd.DataFrame) :
@@ -151,10 +154,8 @@ class GetMeasurements:
         location_sensor_data = pd.read_csv("data\\location_sensors_raw.csv")
         sensors_in_range = self.get_sensors_inrange(location_sensor_data)
         logging.info('Initiating measurements data collection from sensors')
-        dataset_df = pd.DataFrame(dataset, columns=['Sensor_id', 'Value', 'DateTimeFrom', 'DateTimeTo'])
-        dataset_df.to_csv(os.path.join('data','measurments.csv'),index=False)
         for sensor in sensors_in_range:
-            dataset = []
+            self.dataset = []
             page = 1
             while True:
                 try:
@@ -166,7 +167,7 @@ class GetMeasurements:
                         try:
                             for param in data:
                                 if '2020' in param['period']['datetimeFrom']['local']:
-                                    dataset.append([sensor, param['value'], param['period']['datetimeFrom']['local'].split("T")[0], param['period']['datetimeTo']['local'].split('T')[0]])
+                                    self.dataset.append([sensor, param['value'], param['period']['datetimeFrom']['local'].split("T")[0], param['period']['datetimeTo']['local'].split('T')[0]])
                             logging.info(f'Data Collected from : {sensor}')
                             break
                         except:
@@ -175,15 +176,15 @@ class GetMeasurements:
                         for param in data:
                             try:
                                 if '2020' in param['period']['datetimeFrom']['local']:
-                                    dataset.append([sensor, param['value'], param['period']['datetimeFrom']['local'].split("T")[0], param['period']['datetimeTo']['local'].split('T')[0]])
+                                    self.dataset.append([sensor, param['value'], param['period']['datetimeFrom']['local'].split("T")[0], param['period']['datetimeTo']['local'].split('T')[0]])
                             except:
                                 continue
                         page+=1
                             
                 except Exception as e:
                     logging.info(f'error in fetching from sensor , {sensor}, Error : , {e}')
-            sensor_df = pd.DataFrame(dataset, columns=['Sensor_id', 'Value', 'DateTimeFrom', 'DateTimeTo'])    
-            sensor_df.to_csv(os.path.join('data','measurments.csv'), mode="a",index=False, header=False)
+            self.sensor_df = pd.DataFrame(self.dataset, columns=['Sensor_id', 'Value', 'DateTimeFrom', 'DateTimeTo'])    
+            self.sensor_df.to_csv(os.path.join('data','measurements.csv'), mode="a",index=False, header=False)
                 
                 
                 
