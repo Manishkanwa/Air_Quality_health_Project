@@ -5,12 +5,15 @@ import json
 import time
 from LoggingModule.logger import logging
 from LoggingModule.exception import CustomException
+from dotenv import load_dotenv
+load_dotenv()
+ 
  
 class Get_locations:
     def __init__(self):
         self.base_url = "https://api.openaq.org/v3/locations?limit=1000&page="
-        self.header = {"X-API-Key" : "42d38676e3881aa6c8105ddd703c301ec72faad3c6ca3fab3c93dd9fff7c3af1"}
-        self.cities = ['Delhi', 'Mumbai', 'Kolkata', 'Bengaluru', 'Chennai', 'Indore']
+        self.header = {"X-API-Key" : os.getenv("API_KEY")}
+        self.cities = ['Delhi', 'Mumbai', 'Kolkata', 'Bengaluru', 'Indore', 'Hyderabad', 'Kanpur', 'Lucknow']
         
     def fetch_locations_data(self):
         try:
@@ -56,6 +59,7 @@ class Get_locations:
             for location in location_raw:
                 for city in self.cities:
                     if city in location['name']:
+                        location['city'] = city
                         sub_location_raw.append(location)
 
             logging.info('Getting important location info in Datafram')
@@ -67,13 +71,7 @@ class Get_locations:
                 except:
                     area = location['name'].split(' - ')[0].split(': ')[0]
                     
-                try:
-                    city = location['name'].split(' - ')[0].split(', ')[1]
-                except:
-                    try:
-                        city = location['name'].split(' - ')[0].split(': ')[1]
-                    except:
-                        city = 'Mumbai'
+                city = location['city']
                     
                 latitude = location['coordinates']['latitude']
                 longitude = location['coordinates']['longitude']
@@ -83,7 +81,7 @@ class Get_locations:
             logging.info('Location DataFrame succefully created')
             logging.info('Now getting sensors information for locations')
             sensor_df = []
-            listed_params = [1, 2, 3, 5, 6, 7, 8, 9]
+            listed_params = [1, 2, 4, 5, 6, 7, 8, 9]
             for city in sub_location_raw:
                 sensor =  city['sensors']
                 for value in sensor:
@@ -92,7 +90,8 @@ class Get_locations:
                             sensor_id = value['id']
                             name = value['parameter']['displayName']
                             sensor_df.append([location_id, sensor_id, name])
-                        
+            
+            logging.info('Got all the sensors present in the location')            
             sensor_df = pd.DataFrame(sensor_df, columns= ['Location_id', 'Sensor_id','Sensor_name'])
             location_sensors_data = location_df.merge(sensor_df, how = 'left', on = ['Location_id','Location_id'])
             
@@ -100,9 +99,92 @@ class Get_locations:
             
             logging.info('Dataframe successfully merged.')
             logging.info('saving file')
-            location_sensors_data.to_csv(os.path.join('data','loaction_sensors.csv'))
+            location_sensors_data.to_csv(os.path.join('data','location_sensors_raw.csv'), index=False)
             logging.info('save complete')
         except Exception as e:
             logging.info('Error in Processing raw data')
             
+
+class GetMeasurements:
+    def __init__(self):
+        self.header = {"X-API-Key" : os.getenv("API_KEY")}
+        
+        
+    def get_sensors_inrange(self, location_sensor_data : pd.DataFrame) :
+        df_inrange = pd.DataFrame(columns=[location_sensor_data.columns])
+        df_inrange.to_csv(os.path.join('data','loaction_sensors.csv'),mode= 'w', index=False)
+        logging.info('Getting the sensors that are in date range')
+        page = 0
+        sensors_in_range = []
+        sensors_ids = location_sensor_data['Sensor_id']
+        logging.info('Hitting the URL for sensors data this will take time')
+        
+        for sensor in sensors_ids:
+            try:
+                r = req.get(url= f'https://api.openaq.org/v3/sensors/{sensor}?limit=100&page=1',headers=self.header)
+                if r.status_code == 200:
+                    request = r.json()['results']
+                    try:
+                        year_start = int(request[0]['coverage']['datetimeFrom']['local'].split('-')[0])
+                        year_end = int(request[0]['coverage']['datetimeTo']['local'].split('-')[0])
+                        # print(year_start, year_end)
+                        if year_start<=2020 and year_end>= 2021:
+                            sensors_in_range.append(sensor)
+                            df_inrange = location_sensor_data[location_sensor_data['Sensor_id'] == sensor]
+                            df_inrange = df_inrange.reset_index(drop=True)
+                            df_inrange.to_csv(os.path.join('data','loaction_sensors.csv'), index=False,header = False, mode = 'a')
+                            logging.info(f'The {sensor} is in date range. Sensor saved')
+                        else :
+                            logging.info(f'The -({sensor})- not in date range')
+                    except:
+                        logging.info(f'Error on fetching data From : {sensor}')
+                else :
+                    logging.info(f"Sensor : {sensor} invalid error code : {r.status_code}")
+                time.sleep(1)
+            except Exception as e:
+                print("error" , e)
+        logging.info('Got all the usefull locations and sensors. Saved in location_sensor.csv')
+        return sensors_in_range
     
+    def get_measurements(self):
+        logging.info('Getting location sensor data for measurments')
+        location_sensor_data = pd.read_csv("data\\location_sensors_raw.csv")
+        sensors_in_range = self.get_sensors_inrange(location_sensor_data)
+        logging.info('Initiating measurements data collection from sensors')
+        dataset_df = pd.DataFrame(dataset, columns=['Sensor_id', 'Value', 'DateTimeFrom', 'DateTimeTo'])
+        dataset_df.to_csv(os.path.join('data','measurments.csv'),index=False)
+        for sensor in sensors_in_range:
+            dataset = []
+            page = 1
+            while True:
+                try:
+                    request = req.get(f'https://api.openaq.org/v3/sensors/{sensor}/measurements/daily?limit=1000&page={page}&datetimeFrom=2024-01-01&datetimeTo=2025-01-01', headers = self.header)
+                    raw = request.json()
+                    data = raw['results']
+
+                    if type(raw['meta']['found']) == int :
+                        try:
+                            for param in data:
+                                if '2020' in param['period']['datetimeFrom']['local']:
+                                    dataset.append([sensor, param['value'], param['period']['datetimeFrom']['local'].split("T")[0], param['period']['datetimeTo']['local'].split('T')[0]])
+                            logging.info(f'Data Collected from : {sensor}')
+                            break
+                        except:
+                            continue
+                    else:
+                        for param in data:
+                            try:
+                                if '2020' in param['period']['datetimeFrom']['local']:
+                                    dataset.append([sensor, param['value'], param['period']['datetimeFrom']['local'].split("T")[0], param['period']['datetimeTo']['local'].split('T')[0]])
+                            except:
+                                continue
+                        page+=1
+                            
+                except Exception as e:
+                    logging.info(f'error in fetching from sensor , {sensor}, Error : , {e}')
+            sensor_df = pd.DataFrame(dataset, columns=['Sensor_id', 'Value', 'DateTimeFrom', 'DateTimeTo'])    
+            sensor_df.to_csv(os.path.join('data','measurments.csv'), mode="a",index=False, header=False)
+                
+                
+                
+                

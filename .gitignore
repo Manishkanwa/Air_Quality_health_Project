@@ -10,6 +10,7 @@ __pycache__/
 .Python
 build/
 develop-eggs/
+test/
 dist/
 downloads/
 eggs/
@@ -51,6 +52,7 @@ coverage.xml
 .pytest_cache/
 cover/
 
+run.py
 # Translations
 *.mo
 *.pot
