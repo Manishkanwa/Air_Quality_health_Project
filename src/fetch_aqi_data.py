@@ -187,5 +187,11 @@ class GetMeasurements:
             self.sensor_df.to_csv(os.path.join('data','measurements.csv'), mode="a",index=False, header=False)
                 
                 
-                
+class Get_AQI_Data:
+   def __init__(self):
+       self.locator = Get_locations()
+       self.measurement = GetMeasurements()
+       self.locator.Get_locations_dataframe()
+       self.measurement.get_measurements()                
+               
                 
