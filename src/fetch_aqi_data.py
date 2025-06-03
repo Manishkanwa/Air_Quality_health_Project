@@ -191,9 +191,10 @@ class GetMeasurements:
                 
                 
 class Get_AQI_Data:
-    def __init__(self):
-        self.locator = Get_locations()
-        self.measurement = GetMeasurements()
-        self.locator.Get_locations_dataframe()
-        self.measurement.get_measurements()
+   def __init__(self):
+       self.locator = Get_locations()
+       self.measurement = GetMeasurements()
+       self.locator.Get_locations_dataframe()
+       self.measurement.get_measurements()                
+               
                 
