@@ -13,7 +13,11 @@ class Get_locations:
     def __init__(self):
         self.base_url = "https://api.openaq.org/v3/locations?limit=1000&page="
         self.header = {"X-API-Key" : os.getenv("API_KEY")}
-        self.states = pd.read_json("data\\indian_location.json")
+        try:
+            with open ("D:\\Air_Quality_health_Project\\data\\indian_location.json", 'r') as file:
+                self.states = json.load(file)
+        except:
+            logging.info('Error in Loading states')
         
     def fetch_locations_data(self):
         try:
@@ -53,11 +57,13 @@ class Get_locations:
             raise CustomException(e, sys)   
         
     def Get_locations_dataframe(self):
-        location_raw = self.fetch_locations_data()
+        with open ("D:\\Air_Quality_health_Project\\data\\locations_raw.json", 'r') as file:
+            location_raw = json.load(file)
+        location_id = []
         try:
             logging.info('Processing Raw data')
             sub_location_raw = []
-            logging.info('Get subset of cities chosen from raw data.')
+            logging.info('Getting subset of cities chosen from raw data.')
             for state in self.states:
                 for city in state['districts']: 
                     for location in location_raw:
@@ -67,7 +73,7 @@ class Get_locations:
                             sub_location_raw.append(location)
                             location_id.append(location['id'])
 
-            logging.info('Getting important location info in Datafram')
+            logging.info('Getting important location info in Dataframe')
             location_sensors_data = []
             listed_params = [1, 2, 4, 5, 6, 7, 8, 9]
             for location in sub_location_raw:
@@ -86,15 +92,12 @@ class Get_locations:
                         name = sensor['name']
                         location_sensors_data.append([location_id, sensor_id, state, area, name, latitude, longitude])
                         
-            location_sensors_data = pd.DataFrame(location_sensors_data, columns= ['Location_id', 'Sensor_id', 'State', 'Area','Sensor_name', 'Latitude', 'Longitude'])(drop = True)
-            logging.info('Location DataFrame succefully created')
-            
-            logging.info('Dataframe successfully merged.')
+            location_sensors_data = pd.DataFrame(location_sensors_data, columns= ['Location_id', 'Sensor_id', 'State', 'Area','Sensor_name', 'Latitude', 'Longitude'])            
             logging.info('saving file')
             location_sensors_data.to_csv(os.path.join('data','location_sensors_raw.csv'), index=False)
             logging.info('save complete')
         except Exception as e:
-            logging.info('Error in Processing raw data')
+            logging.info(f'Error in Processing raw data {e}')
             
 
 class GetMeasurements:
@@ -103,7 +106,7 @@ class GetMeasurements:
         self.location_sensor_data = pd.read_csv("data\\location_sensors_raw.csv")
         self.dataset = []
         self.dataset_df = pd.DataFrame(self.dataset, columns=['Sensor_id', 'Value', 'DateTimeFrom', 'DateTimeTo'])
-        self.dataset_df.to_csv(os.path.join('data','measeurments.csv'),index=False)
+        self.dataset_df.to_csv(os.path.join('data','measurements.csv'),index=False)
          
     def get_sensors_inrange(self) :
         df_inrange = pd.DataFrame(columns=[self.location_sensor_data.columns])
@@ -113,17 +116,13 @@ class GetMeasurements:
         sensors_in_range = []
         sensors_ids = self.location_sensor_data['Sensor_id']
         logging.info('Hitting the URL for sensors data this will take time')
-        start_time = time.time()
         index = 0
-        track = 0
-        end_time = time.time()
         sensors_in_range = []
-        elapsed_time = end_time - start_time
-        df_inrange = pd.DataFrame(columns=[self.location_sensor_daself.columns])
+        df_inrange = pd.DataFrame(columns=[self.location_sensor_data.columns])
         df_inrange.to_csv('location_sensors.csv',mode= 'w', index=False)
         for sensor in sensors_ids:
             try:
-                logging.info(f'{index} ', end = '')
+                logging.info(f'{index}')
                 r = req.get(url= f'https://api.openaq.org/v3/sensors/{sensor}?limit=100&page=1',headers=self.header)
                 if r.status_code == 200:
                     request = r.json()['results']
@@ -134,7 +133,7 @@ class GetMeasurements:
                         if year_start<=2020 and year_end>= 2021:
                                 sensors_in_range.append(sensor)
                                 df_inrange = self.location_sensor_data[self.location_sensor_data['Sensor_id'] == sensor]
-                                df_inrange.to_csv(os.path.join('data','loaction_sensors.csv'), index=False,header = False, mode = 'a')
+                                df_inrange.to_csv(os.path.join('data','location_sensors.csv'), index=False,header = False, mode = 'a')
                     except:
                         logging.info('Data Not Found ')
                 else :
@@ -142,14 +141,7 @@ class GetMeasurements:
             except Exception as e:
                 logging.info(f"error {e}")        
             index+=1
-            track += 1
-            end_time = time.time()
-            elapsed_time = end_time - start_time
-            if track == 60 and elapsed_time < 60 :
-                logging.info('Wait for :',61-elapsed_time)
-                time.sleep(round(1))
-                track = 0
-                start_time = time.time()
+            time.sleep(1)
         logging.info('Got all the usefull locations and sensors. Saved in location_sensor.csv')
         return sensors_in_range
     
