@@ -68,6 +68,14 @@ class Data_Cleaning:
         except:        
             return 'Unknown'
 
+    def __get_aqi_index_category(self, value):
+        if value <= 50: return 'Good'
+        elif value <= 100: return 'Satisfactory'
+        elif value <= 200: return 'Moderate'
+        elif value <= 300: return 'Poor'
+        elif value <= 400: return 'Very Poor'
+        else: return 'Severe'
+    
     
     def __clean_data(self):
         '''Changes the data type and names  of the attributes.'''
@@ -136,6 +144,8 @@ class Data_Cleaning:
             
             Data_pivot['Pollution_index'] = Data_pivot[['co µg/m³', 'no2 µg/m³', 'pm10 µg/m³', 'pm25 µg/m³', 'so2 µg/m³']].mean(axis=1)
             Data_pivot['Disease_index'] = Data_pivot[['Asthama_Cases', 'Bronchitis_Cases', 'Heart_attacks', 'COPD_Cases', 'Neumonia_Cases']].mean(axis=1)
+            
+            Data_pivot['Pollution_category'] =  Data_pivot.apply(lambda X: self._Data_Cleaning__get_aqi_index_category( X['Pollution_index']),axis= 1)
             logging.info('Pullution and disease index added to the pivot table')
             
             # Define correct calendar order
@@ -144,8 +154,13 @@ class Data_Cleaning:
 
             # Convert 'Month' column to categorical with the correct order
             Data_pivot['Month'] = pd.Categorical(Data_pivot['Month'], categories=month_order, ordered=True)
-            
-            
+            month_map = {
+                'January': 1, 'February': 2, 'March': 3, 'April': 4,
+                'May': 5, 'June': 6, 'July': 7, 'August': 8,
+                'September': 9, 'October': 10, 'November': 11, 'December': 12
+            }
+            Data_pivot['Month'] = Data_pivot['Month'].map(month_map)
+                        
             logging.info('Saving Both Tables --- ')
             Data.to_excel(os.path.join('data', 'clean_data' , 'AQI_Cases_data.xlsx'), index=False)
             Data_pivot.to_excel(os.path.join('data', 'clean_data' , 'Data_pivot.xlsx'), index=False)
