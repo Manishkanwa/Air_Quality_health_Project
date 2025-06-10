@@ -65,6 +65,109 @@ To analyze how varying levels of air pollution affect public health metrics like
 
 ---
 
+## 📊 Exploratory Data Analysis (Completed)
+
+- 📆 **Monthly pollution trends** across states and pollutants
+
+
+- 📌 **State-wise comparison** of health cases vs pollution
+
+
+
+
+- 🔁 **Correlation heatmaps** between pollutants and diseases
+
+---
+
+## 🔮 Model Summary (Completed)
+
+| Model                   | Target              | Score (R²)      |
+|-------------------------|---------------------|-----------------|
+| XGBoost Regression      | Asthma Cases        | `0.97`          |
+| XGBoost Regression      | Bronchitis_Cases    | `0.98`          | 
+| XGBoost Regression      | Heart_attacks       | `0.98`          | 
+| XGBoost Regression      | COPD                | `0.94`          | 
+| XGBoost Regression      | Neumonia_Cases      | `0.96`          | 
+
+- ✅ **Preprocessing**: StandardScaler, OneHotEncoder, CyclicEncoder, OrdinalEncoder
+- ✅ **Feature Engineering**: Month cyclic encoding, AQI categorization, state dummies
+- ✅ **Evaluation**: R², MAE, feature importances
+
+---
+
+The metrices for  Asthama_Cases
+                      Model       RMSE       MAE        R²
+4        XGBoost Regression   7.662990  1.640370  0.974454
+3  Random Forest Regression   8.004050  2.607360  0.972129
+0         Linear Regression   8.929375  5.769518  0.965312
+2          Lasso Regression   9.037726  5.215046  0.964465
+1          Ridge Regression  12.940147  8.188244  0.927153
+
+The metrices for  Bronchitis_Cases
+                      Model      RMSE       MAE        R²
+4        XGBoost Regression  1.097937  0.238995  0.987008
+3  Random Forest Regression  2.373072  0.647909  0.939308
+0         Linear Regression  2.826007  1.544492  0.913929
+2          Lasso Regression  3.068762  1.665929  0.898507
+1          Ridge Regression  3.380535  1.899716  0.876836
+
+The metrices for  Heart_attacks
+                      Model      RMSE       MAE        R²
+4        XGBoost Regression  0.420315  0.138767  0.984607
+3  Random Forest Regression  0.436128  0.147995  0.983427
+0         Linear Regression  0.558065  0.376944  0.972863
+1          Ridge Regression  0.955295  0.603239  0.920483
+2          Lasso Regression  1.618980  0.914740  0.771615
+
+The metrices for  COPD
+                      Model      RMSE       MAE        R²
+4        XGBoost Regression  1.267361  0.428012  0.948847
+3  Random Forest Regression  1.415144  0.567937  0.936222
+0         Linear Regression  1.628857  1.297157  0.915504
+1          Ridge Regression  1.680125  1.307095  0.910101
+2          Lasso Regression  2.092514  1.407011  0.860553
+
+The metrices for  Neumonia_Cases
+                      Model      RMSE       MAE        R²
+4        XGBoost Regression  0.570303  0.269458  0.969398
+3  Random Forest Regression  0.940921  0.362490  0.916700
+1          Ridge Regression  1.867537  1.547558  0.671846
+2          Lasso Regression  1.898508  1.544942  0.660872
+0         Linear Regression  1.977739  1.631150  0.631975
+
+
+
+## 📈 Key Visualizations
+
+- 📊 Pollution vs Disease scatter plots
+- 🔥 Correlation heatmaps (PM2.5 vs Asthma, etc.)
+- 🧭 Time-series trendlines (monthly)
+
+> *Visuals created using Plotly, Seaborn, and Matplotlib*
+
+---
+
+## 🚀 Upcoming Work
+
+### 🔧 Dashboard (In Progress)
+- Streamlit interface to input pollutant values
+- Predict asthma/COPD cases in real-time
+- Interactive graphs and summary cards
+
+### 🔗 Flask API (Optional)
+- Expose trained model via REST endpoint
+- Allow JSON-based prediction inputs
+
+### 🌐 Deployment
+- Streamlit Cloud or Render for public access
+- Integration with portfolio website
+
+
+
+
+
+
+
 ## 👤 Author
 
 **Manish**  
