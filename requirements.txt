@@ -3,10 +3,10 @@ numpy
 matplotlib 
 seaborn 
 plotly 
-scikit-learn 
-streamlit 
+scikit-learn==1.6.1  # or match the version you trained with 
 flask 
 requests 
 geopandas 
 openpyxl
 xgboost
+
