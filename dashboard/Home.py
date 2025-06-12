@@ -1,4 +1,32 @@
-# 🏥 Air Quality & Health Impact Analyzer
+import streamlit as st
+import pandas as pd
+import numpy as np
+import os, sys
+import folium as fl
+from streamlit_folium import st_folium
+from src.predict import custom_data, PredictPipeline
+import matplotlib.pyplot as plt
+import pickle as pkl
+
+Data = pd.read_excel(os.path.join('data', 'clean_data', 'AQI_Cases_data.xlsx'))
+Data_pivot = pd.read_excel(os.path.join('data', 'clean_data', 'Data_pivot.xlsx'))
+
+states = ['Odisha', 'Kerala', 'Meghalaya', 'Mizoram', 'Tamil Nadu', 'Punjab',
+       'Karnataka', 'West Bengal', 'Bihar', 'Rajasthan', 'Gujarat',
+       'Andhra Pradesh', 'Uttar Pradesh', 'Delhi (NCT)', 'Telangana',
+       'Maharashtra', 'Tripura', 'Jharkhand', 'Madhya Pradesh',
+       'Nagaland', 'Assam', 'Haryana', 'Chhattisgarh']
+
+months =['January', 'February', 'March', 'April', 'May', 'June',
+               'July', 'August', 'September', 'October', 'November', 'December']
+
+pollutant = ['co µg/m³', 'no2 µg/m³', 'pm10 µg/m³', 'pm25 µg/m³', 'so2 µg/m³']
+
+
+lat =list(dict(Data)['Latitude'])
+long = list(dict(Data)['Longitude'])
+
+st.markdown("""# 🏥 Air Quality & Health Impact Analyzer
 
 A full-time data science project exploring the impact of air pollution on public health across Indian states. The project integrates air quality data and monthly health statistics to uncover patterns and correlations using visualizations, EDA, and statistical modeling.
 
@@ -158,3 +186,10 @@ GATE 2025 DA Qualified | Aspiring Data Scientist
 ## 📌 Note
 
 This project is complete and has been fully deployed with a working dashboard and trained models. All results, visuals, and code are reproducible and open for review.
+
+""")
+
+
+
+
+
