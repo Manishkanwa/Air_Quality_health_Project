@@ -1,12 +1,8 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import os, sys
-import folium as fl
-from streamlit_folium import st_folium
+import os
 from src.predict import custom_data, PredictPipeline
-import matplotlib.pyplot as plt
-import pickle as pkl
 
 Data = pd.read_excel(os.path.join('data', 'clean_data', 'AQI_Cases_data.xlsx'))
 Data_pivot = pd.read_excel(os.path.join('data', 'clean_data', 'Data_pivot.xlsx'))

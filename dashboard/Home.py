@@ -1,11 +1,8 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
-import os, sys
-from src.predict import custom_data, PredictPipeline
-import matplotlib.pyplot as plt
-import pickle as pkl
-
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 Data = pd.read_excel(os.path.join('data', 'clean_data', 'AQI_Cases_data.xlsx'))
 Data_pivot = pd.read_excel(os.path.join('data', 'clean_data', 'Data_pivot.xlsx'))
 
