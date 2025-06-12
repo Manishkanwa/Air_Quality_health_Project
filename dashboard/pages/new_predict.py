@@ -36,7 +36,15 @@ if st.button("Predict"):
     df = Data.get_data_as_dataframe()
     make_pred = PredictPipeline()
     pred = make_pred.predictpipeline('Asthama_Model',df)
+    pred1 = make_pred.predictpipeline('COPD_Model',df)
+    pred2 = make_pred.predictpipeline('Bronchitis_Model',df)
+    pred3 = make_pred.predictpipeline('Heart_Model',df)
+    pred4 = make_pred.predictpipeline('Neumonia_Model',df)
     st.success(f"Predicted Asthma Cases (per Lakh): {pred}")
+    st.success(f"Predicted COPD Cases (per Lakh): {pred1}")
+    st.success(f"Predicted Bronchitis Cases (per Lakh): {pred2}")
+    st.success(f"Predicted Heart Attack Cases (per Lakh): {pred3}")
+    st.success(f"Predicted Pneumonia Cases (per Lakh): {pred4}")
     
 
 st.markdown("""
