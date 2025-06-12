@@ -3,7 +3,7 @@ numpy
 matplotlib 
 seaborn 
 plotly 
-scikit-learn==1.6.1  # or match the version you trained with 
+scikit-learn==1.6.1  # or match the version you trained with
 flask 
 requests 
 geopandas 
